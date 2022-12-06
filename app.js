@@ -6,6 +6,7 @@ const cors = require ('cors');
 const userRoutes = require('./routes/user');
 const itemRoutes = require('./routes/item');
 const auth = require('./middleware/auth');
+const recipeRoutes = require('./routes/recipe');
 
 const path = require('path');
 
@@ -44,6 +45,6 @@ app.use(bodyParser.json());
 
 app.use('/api/auth', userRoutes);
 app.use('/api/item', auth, itemRoutes);
-// app.use('/api/recipe', auth, recipeRoutes);
+app.use('/api/recipe', auth, recipeRoutes);
 
 module.exports = app;

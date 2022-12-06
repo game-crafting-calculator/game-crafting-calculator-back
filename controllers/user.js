@@ -176,19 +176,20 @@ exports.login = async (req, res, next) => {
 
 // DELETE
 exports.deleteUser = async (req, res) => {
-    let user = await UserModel.findOne({ _id: req.params.id});
     try { 
-        if (user.userId != req.auth.userId) {
+        let user = await UserModel.findOne({ _id: req.auth.userId});
+        if (!user) {
             res.status(401).json({ message: 'Refused !'});
             return false;
-        } else {
-            await UserModel.deleteOne({_id: req.params.id});
-                try{
-                    res.status(200).json({ message: 'User delete !'})
-                } catch (error) { 
-                    res.status(400).json({error})
-            }  
         }
+
+        await UserModel.deleteOne({_id: req.auth.userId});
+            try{
+                res.status(200).json({ message: 'User delete !'})
+            } catch (error) { 
+                res.status(400).json({error})
+        }  
+
     } catch (error) {
         res.status(400).json({ error, type:"delete user" });
     };
@@ -196,20 +197,23 @@ exports.deleteUser = async (req, res) => {
 
 // MODIFY
 exports.modifyUser = async (req, res) => {
-    let user = UserModel.findOne({ _id: req.params.id});
     try {
-        if (user.userId != req.auth.userId) {
+        let user = await UserModel.findOne({ _id: req.auth.userId});
+        console.log(req.auth.userId);
+        if (!user) {
             res.status(401).json({ message: 'Refused !'});
             return false;
-        } else {
-            await UserModel.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id });
-            res.status(200).json({ message: 'Object modify !'})
-        }
+        } 
+            
+        await UserModel.updateOne({ _id: req.auth.userId }, { ...req.body, _id: req.params.id });
+        res.status(200).json({ message: 'Object modify !'})
+        
     } catch (error) { 
         res.status(400).json({error})
     }   
 }
 
+// FAVORIS
 exports.getFavoris = async (req, res) => {
     try {
         const favorisTab = await UserModel.findOne(req.params.favoris)

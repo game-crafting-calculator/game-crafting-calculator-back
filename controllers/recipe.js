@@ -22,8 +22,14 @@ exports.createRecipe = async (req, res) => {
     .catch((error) => res.status(400).json({error}));
 }
 
-exports.modifyRecipe = (req, res) => {
+exports.modifyRecipe = async (req, res) => {
     RecipeModel.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
     .then(() => res.status(200).json({ message: 'Recipe modify !'}))
+    .catch((error) => res.status(400).json({error}));
+}
+
+exports.deleteRecipe = (req, res, next) => {
+    RecipeModel.deleteOne({ _id: req.params.id })
+    .then(() => res.status(200).json({ message: 'Recipe delete !'}))
     .catch((error) => res.status(400).json({error}));
 }

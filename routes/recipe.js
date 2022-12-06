@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const recipeCtrl = require('../controllers/recipe');
 
-// router.get('/signup', recipeCtrl.getAll);
-// router.get('/signup', recipeCtrl.getOneById);
-// router.get('/signup', recipeCtrl.getOneByName);
+router.get('/favoris', recipeCtrl.getAll);
+router.get('/favoris', recipeCtrl.getOneById);
+router.get('/favoris', recipeCtrl.createRecipe);
+router.get('/favoris', recipeCtrl.modifyRecipe);
+router.get('/favoris', recipeCtrl.deleteRecipe);
 
 module.exports = router;
