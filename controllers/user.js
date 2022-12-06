@@ -142,7 +142,7 @@ exports.login = async (req, res, next) => {
         //     return false;   
         // }
         
-        // UserModel.findOneAndUpdate({id: "1"}, {last_connection:Date.now()})
+        UserModel.findOneAndUpdate({id: "1"}, {last_connection:Date.now()})
         
     } catch (error) {
         res.status(500).json({ error, type:"mongo" });
@@ -239,9 +239,11 @@ const generateTokenReponse = (user) => {
     };
 }
 
+// PROFILE
 exports.getProfile = async (req, res) => {
     const userId = req.auth.userId
     try {
+        console.log(req.auth);
         const user = await UserModel.findOne({_id: userId})
         if (user === null) {
             res.status(401).json({ message : 'error'});
