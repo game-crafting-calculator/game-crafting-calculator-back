@@ -2,8 +2,13 @@ const mongoose = require('mongoose');
 
 
 const userSchema = mongoose.Schema({
-    recipeResultsID:{ type:mongoose.Schema.Types.ObjectId, required:true, ref:"Item"},
+    recipeResultID:{ type:mongoose.Schema.Types.ObjectId, required:true, ref:"Item"},
+    perCraft:{type:Number, required:true},
     itemNeedsID:[{ type:mongoose.Schema.Types.ObjectId, required:true, ref:"Item"}],
+    ingredients:[{
+        itemID:{type:mongoose.Types.ObjectId, required:true, ref:"Item"},
+        quantity:{type:Number, required:true}
+    }]
 });
 
 

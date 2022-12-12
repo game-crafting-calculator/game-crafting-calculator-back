@@ -1,56 +1,93 @@
-// //unique string
-// const{v4: uuidv4} = require('uuid');
+const express = require('express');
+const router = express.Router();
+const inlineCss = require('inline-css');
+const hogan = require('hogan.js');
 
-// //email handler
-// const nodemailer = require('nodemailer');
+//MongoDB user verification model
+const UserVerification = require('../models/UserVerification');
+//email handler
+const nodemailer = require('nodemailer');
+//unique string
+const{v4: uuidv4} = require('uuid');
+//env variables
+require("dotenv").config();
 
-// //MongoDB user verification model
-// const UserVerification = require('../models/UserVerification');
+const fs = require('fs');
+
+
 
 // const sendVerificationEmail =require('../routes/nodeMailerUser')
 
-// //nodemailer stuff
-// const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//         user: process.env.AUTH_EMAIL,
-//         pass: process.env.AUTH_PASS,
-//     }
-// });
 
-// //testing success
+module.exports.send = async() => {
+
+    //nodemailer stuff
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.AUTH_EMAIL,
+            pass: process.env.AUTH_PASS,
+        }
+    })
+
+    const templateFile = fs.readFileSync('../template/Mail/templateMail.html')
+    const templateStyled = await inlineCss(templateFile.toString(), {url:"file://" + __dirname + "/template/"})
+    const templateCompiled = hogan.compile(templateStyled)
+    const templateRendered = templateCompiled.render({text: 
+        `<p> Verify your email address to complete the signup and login into your account. </p>
+        <p>This link <b> expires in 6 hours </b> . </p>
+        <p>
+            Press 
+            <a href=${currentUrl + "user/verify/" + _id + "/" + uniqueString}> 
+                here 
+            </a> 
+            to proceed.
+        </p>`})
+
+    //mail options
+    const mailOptions = {
+        from: process.env.AUTH_EMAIL,
+        to: process.env.MAIL,
+        subject:"Mail Validator",
+        html: templateRendered,
+    }
+
+    await transporter.sendMail(mailOptions, function (err, info) {
+        if (err) {
+            console.log(err, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrrrorrrrrrrrrrrrrrrrrrrrrr");
+        } else {
+            console.log("email sent: " + info.response);
+        }
+    })
+    
+}
+
+
+
+//testing success
 // transporter.verify((error, success) => {
 //     if(error) {
 //         console.log(error);
+//         console.log("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "Not ready for messages");
 //     } else {
 //         console.log("Ready for messages");
 //         console.log(success);
 //     }
-// });
+// })
 
 
 
-// //send verification email
-// const sendVerificationEmail = ({_id, email}, res) => {
+//send verification email
+// exports.sendVerificationEmail = ({_id, email}, res) => {
 //     // url to be used in the email
 //     const currentUrl = "http://localhost:5000/";
 
 //     const uniqueString = uuidv4() = _id;
 
-//     //mail options
-//     const mailOptions = {
-//         from: process.env.AUTH_EMAIL,
-//         to: "Verify Your Email",
-//         html:`<p>Verify your email address to complete the signup and login into your account.</p><p>This link 
-//         <b>expires in 6 hours</b>.</p><p>Press <a href=${
-//             currentUrl + "user/verify/" + _id + "/" + uniqueString
-//         }>here</a> to proceed.</p>`,
-//     };
+
 
 //     //hash the uniqueString
-//     const saltRounds = 10;
-//     bcrypt
-//         .hash(uniqueString, saltRounds)
+//     bcrypt.hash(uniqueString, 10)
 //         .then((hashedUniqueString) => {
 //             //set values in userVerification collection
 //             const newVerification = new UserVerification({
@@ -180,3 +217,5 @@
 // })
 
 // module.exports = nodeMailerUser;
+// module.exports = router;
+

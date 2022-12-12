@@ -8,8 +8,11 @@ const { findOneAndUpdate } = require('../models/User');
 //MongoDB user model
 const UserModel = require('../models/User');
 
-// // env variables
-// require("dotenv").config();
+//nodeMailer handler
+const nodeMailerUser = require('./nodeMailerUser');
+
+// env variables
+require("dotenv").config();
 
 
 
@@ -72,11 +75,11 @@ exports.signup = async (req, res) => {
         res.send(generateTokenReponse(dbUser));
         res.status(201).json({message: 'Utilisateur créé !'});
 
-        // handle account verification
-    //         .then((result) => {
-    //             nodeMailerUser.sendVerificationEmail(result, res);
-    //         })
-    //         .catch(error => res.status(400).json({ error }));
+    //  // handle account verification
+            // .then((result) => {
+                // nodeMailerUser.sendVerificationEmail(result, res);
+            // })
+            // .catch(error => res.status(400).json({ error }));
 
     
     } catch (error) {
@@ -199,18 +202,36 @@ exports.deleteUser = async (req, res) => {
 exports.modifyUser = async (req, res) => {
     try {
         let user = await UserModel.findOne({ _id: req.auth.userId});
-        console.log(req.auth.userId);
         if (!user) {
             res.status(401).json({ message: 'Refused !'});
             return false;
         } 
-            
-        await UserModel.updateOne({ _id: req.auth.userId }, { ...req.body, _id: req.params.id });
+        
+        let newUser = req.body
+        if (newUser.password) {
+            newUser.password = await bcrypt.hash(newUser.password, 10);
+        }
+
+        //verification dqns la base de donnée
+        //$ne => negation
+        let emailUsed = UserModel.findOne({$and:[{_id:{$ne:user._id}}, {email:newUser.email}]})
+        let usernameUsed = UserModel.findOne({$and:[{_id:{$ne:user._id}}, {username:newUser.username}]})
+        
+        if(emailUsed){
+            res.status(400).json({message:"email already used", field:"email"})
+        }
+        if(usernameUsed){
+            res.status(400).json({message:"username already used", field:"username"})
+        }
+        
+        await UserModel.updateOne({ _id: req.auth.userId }, newUser);
         res.status(200).json({ message: 'Object modify !'})
         
     } catch (error) { 
-        res.status(400).json({error})
-    }   
+        res.status(400).json(error)
+    }  
+    
+    
 }
 
 // FAVORIS

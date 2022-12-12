@@ -45,6 +45,6 @@ app.use(bodyParser.json());
 
 app.use('/api/auth', userRoutes);
 app.use('/api/item', auth, itemRoutes);
-app.use('/api/recipe', auth, recipeRoutes);
+app.use('/api/recipe', recipeRoutes);
 
 module.exports = app;
