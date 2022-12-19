@@ -1,28 +1,91 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/user.controller");
+const recipeController = require("../controllers/recipe.controller");
 
-const auth = require("../middleware/auth");
-const getMissingParameters = require("../utils/missing-parameters").getMissingParameter;
+const getMissingParameters =
+  require("../utils/missing-parameters").getMissingParameter;
 
+//ROUTE GET ALL
+router.get("/", async (req, res) => {
+  let [result, error] = await recipeController.getAll();
 
+  if (!result) {
+    res.status(400).json({ error });
+    return false;
+  }
 
-//ROUTE REGISTER
-router.post("/signup", async (req, res) => {
-  //on récupére les données de la requéte
-  let { username, email, password } = req.body;
+  res.status(200).json(result);
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//ROUTE GET BY NAME
+router.get("/name/:recipe_name", async (req, res) => {
+  //on recupère des données de la requete
+  let { recipe_name } = req.params;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ username, email, password });
+  let missing = getMissingParameters({ recipe_name });
+
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.createAccount(
-    username,
-    email,
-    password
+  let [result, error] = await recipeController.getOneByName(recipe_name);
+
+  if (!result) {
+    res.status(400).json({ error });
+    return false;
+  }
+
+  res.status(200).json(result);
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//ROUTE GET BY ID
+router.get("/id/:recipe_id", async (req, res) => {
+  //on recupère des données de la requete
+  let { recipe_id } = req.params;
+
+  //On verifie que les données sont existants
+
+  let missing = getMissingParameters({ recipe_id });
+
+  if (missing) {
+    res.status(400).json({ error: "missing", parameters: missing });
+    return false;
+  }
+
+  let [result, error] = await recipeController.getOneById(recipe_id);
+
+  if (!result) {
+    res.status(400).json({ error });
+    return false;
+  }
+
+  res.status(200).json(result);
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//ROUTE CREATE
+router.post("/", async (req, res) => {
+  //on récupére les données de la requéte
+  let { item_id, per_craft, ingredients } = req.body;
+
+  //On verifie que les données sont existants
+  let missing = getMissingParameters({ item_id, per_craft, ingredients });
+  if (missing) {
+    res.status(400).json({ error: "missing", parameters: missing });
+    return false;
+  }
+
+  let [result, error] = await recipeController.postRecipe(
+    item_id,
+    per_craft,
+    ingredients
   );
   if (!result) {
     res.status(400).json({ error });
@@ -34,75 +97,23 @@ router.post("/signup", async (req, res) => {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-//ROUTE LOGIN
-router.post("/login", async (req, res) => {
-  //on récupére les données de la requéte
-  let { email, password } = req.body;
-
-  //On verifie que les données sont existants
-  let missing = getMissingParameters({ email, password });
-  if (missing) {
-    res.status(400).json({ error: "missing", parameters: missing });
-    return false;
-  }
-
-  let [result, error] = await userController.login(email, password);
-  if (!result) {
-    res.status(400).json({ error });
-    return false;
-  }
-
-  res.status(200).json(result);
-});
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-//AUTH
-//fonction suivante => auth tous ce qui suit
-router.use(auth);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-//ROUTE GET PROFILE
-router.get("/profile", async (req, res) => {
-  //on récupére les données de la requéte
-  let { user_id } = req.user;
-
-  //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
-  if (missing) {
-    res.status(400).json({ error: "missing", parameters: missing });
-    return false;
-  }
-
-  let [result, error] = await userController.getProfile(user_id);
-  if (!result) {
-    res.status(400).json({ error });
-    return false;
-  }
-
-  res.status(200).json(result);
-});
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 //ROUTE MODIFY
-router.put("/profile", async (req, res) => {
+router.put("/:recipe_id", async (req, res) => {
   //on récupére les données de la requéte
-  let { user_id } = req.user;
-  let { username, password } = req.body;
+  let { recipe_id } = req.params;
+  let { recipe_name, image } = req.body;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
+  let missing = getMissingParameters({ recipe_id });
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.updateProfile(
-    user_id,
-    username,
-    password
+  let [result, error] = await recipeController.putrecipe(
+    recipe_id,
+    recipe_name,
+    image
   );
 
   if (!result) {
@@ -116,18 +127,18 @@ router.put("/profile", async (req, res) => {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 //ROUTE DELETE
-router.delete("/", async (req, res) => {
+router.delete("/:recipe_id", async (req, res) => {
   //on récupére les données de la requéte
-  let { user_id } = req.user;
+  let { recipe_id } = req.params;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
+  let missing = getMissingParameters({ recipe_id });
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.deleteAccount(user_id);
+  let [result, error] = await recipeController.deleterecipe(recipe_id);
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -135,7 +146,5 @@ router.delete("/", async (req, res) => {
 
   res.status(200).json(result);
 });
-
-// router.get("/favoris", userCtrl.getFavoris);
 
 module.exports = router;

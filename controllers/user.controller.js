@@ -21,6 +21,8 @@ const generateTokenReponse = (user_id, email) => {
 
 let controller = {};
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 // REGISTER
 controller.createAccount = async (username, email, password) => {
   //vérifier l'email
@@ -122,7 +124,7 @@ controller.createAccount = async (username, email, password) => {
   }
 };
 
-//////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 // LOGIN
 controller.login = async (email, password) => {
@@ -183,6 +185,9 @@ controller.login = async (email, password) => {
   return [token, ""];
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+// GET PROFILE
 controller.getProfile = async (user_id) => {
   let user;
   try {
@@ -203,6 +208,9 @@ controller.getProfile = async (user_id) => {
   return [user, ""];
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+// UPDATE PROFILE
 controller.updateProfile = async (user_id, username, password) => {
   //find user
   let user;
@@ -253,17 +261,19 @@ controller.updateProfile = async (user_id, username, password) => {
   return [true, ""];
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+// DELETE ACCOUNT
 controller.deleteAccount = async (user_id) => {
   let deletedUser;
   try {
-    deletedUser = await pool.query(`DELETE FROM app_user WHERE user_id = $1`, [
-      user_id,
-    ]);
+    deletedUser = await pool.query(
+      `DELETE FROM app_user WHERE user_id = $1`, 
+      [user_id]
+      );
   } catch (error) {
     console.log(
-      "DEV - userController - deleteProfile - delete profile\n",
-      error
-    );
+      "DEV - userController - deleteProfile - delete profile\n", error);
     return [true, "server error"];
   }
 

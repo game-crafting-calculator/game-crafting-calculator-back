@@ -6,9 +6,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const userRoutes = require("./routes/user.route");
-// const itemRoutes = require('./routes/item');
-const auth = require("./middleware/auth");
-// const recipeRoutes = require('./routes/recipe');
+const itemRoutes = require("./routes/item.route");
+// const auth = require("./middleware/auth");
+const recipeRoutes = require("./routes/recipe.route");
 
 const path = require("path");
 
@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/user", userRoutes);
-// app.use('/api/item', auth, itemRoutes);
-// app.use('/api/recipe', recipeRoutes);
+app.use("/api/item", itemRoutes);
+app.use("/api/recipe", recipeRoutes);
 
 module.exports = app;
