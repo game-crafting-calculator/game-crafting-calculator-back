@@ -19,7 +19,6 @@ controller.getAll = async () => {
     console.log("DEV - userController - getAll - select recipe\n", error);
     return [false, "server error"];
   }
-  console.log(recipe);
 
   recipe = recipe.rows;
 
@@ -66,6 +65,38 @@ controller.getOneByName = async (item_name) => {
 
 //GET BY ID
 controller.getOneById = async (recipe_id) => {
+  let recipe;
+  try {
+    recipe = await pool.query(
+      `      
+      SELECT item.item_name, recipe.recipe_id, item.image
+      FROM recipe
+      INNER JOIN item
+      ON recipe.item_id = item.item_id
+      WHERE recipe_id = $1
+      `,
+      [recipe_id]
+    );
+  } catch (error) {
+    console.log(
+      "DEV - itemController - getOneById - select recipe_id\n",
+      error
+    );
+  }
+
+  recipe = recipe.rows[0];
+
+  if (!recipe) {
+    return [false, "item does not exsits"];
+  }
+
+  return [recipe, ""];
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//GET BY ADRI
+controller.getCompleteById = async (recipe_id) => {
   let recipe;
   try {
     recipe = await pool.query(

@@ -1,40 +1,46 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const inlineCss = require('inline-css');
-const hogan = require('hogan.js');
+const inlineCss = require("inline-css");
+const hogan = require("hogan.js");
 
 //MongoDB user verification model
-const UserVerification = require('../models/UserVerification');
+const UserVerification = require("../models/UserVerification");
 //email handler
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 //unique string
-const{v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 //env variables
 require("dotenv").config();
 
-const fs = require('fs');
-
-
+const fs = require("fs");
 
 // const sendVerificationEmail =require('../routes/nodeMailerUser')
 
+nodemailerSend.send = async () => {
+  //nodemailer stuff
+  try {
+    const transporter = await nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.AUTH_EMAIL,
+        pass: process.env.AUTH_PASS,
+      },
+    });
+  } catch (error) {
+    console.log(
+      "DEV - nodemailerController - transporter - create stuff error\n",
+      error
+    );
+    return [false, "transporter error"];
+  }
 
-module.exports.send = async() => {
-
-    //nodemailer stuff
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: process.env.AUTH_EMAIL,
-            pass: process.env.AUTH_PASS,
-        }
-    })
-
-    const templateFile = fs.readFileSync('../template/Mail/templateMail.html')
-    const templateStyled = await inlineCss(templateFile.toString(), {url:"file://" + __dirname + "/template/"})
-    const templateCompiled = hogan.compile(templateStyled)
-    const templateRendered = templateCompiled.render({text: 
-        `<p> Verify your email address to complete the signup and login into your account. </p>
+  const templateFile = fs.readFileSync("../template/Mail/templateMail.html");
+  const templateStyled = await inlineCss(templateFile.toString(), {
+    url: "file://" + __dirname + "/template/",
+  });
+  const templateCompiled = hogan.compile(templateStyled);
+  const templateRendered = templateCompiled.render({
+    text: `<p> Verify your email address to complete the signup and login into your account. </p>
         <p>This link <b> expires in 6 hours </b> . </p>
         <p>
             Press 
@@ -42,27 +48,28 @@ module.exports.send = async() => {
                 here 
             </a> 
             to proceed.
-        </p>`})
+        </p>`,
+  });
 
-    //mail options
-    const mailOptions = {
-        from: process.env.AUTH_EMAIL,
-        to: process.env.MAIL,
-        subject:"Mail Validator",
-        html: templateRendered,
+  //mail options
+  const mailOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: process.env.MAIL,
+    subject: "Mail Validator",
+    html: templateRendered,
+  };
+
+  await transporter.sendMail(mailOptions, function (err, info) {
+    if (err) {
+      console.log(
+        err,
+        "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrrrorrrrrrrrrrrrrrrrrrrrrr"
+      );
+    } else {
+      console.log("email sent: " + info.response);
     }
-
-    await transporter.sendMail(mailOptions, function (err, info) {
-        if (err) {
-            console.log(err, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrrrorrrrrrrrrrrrrrrrrrrrrr");
-        } else {
-            console.log("email sent: " + info.response);
-        }
-    })
-    
-}
-
-
+  });
+};
 
 //testing success
 // transporter.verify((error, success) => {
@@ -75,16 +82,12 @@ module.exports.send = async() => {
 //     }
 // })
 
-
-
 //send verification email
 // exports.sendVerificationEmail = ({_id, email}, res) => {
 //     // url to be used in the email
 //     const currentUrl = "http://localhost:5000/";
 
 //     const uniqueString = uuidv4() = _id;
-
-
 
 //     //hash the uniqueString
 //     bcrypt.hash(uniqueString, 10)
@@ -218,4 +221,3 @@ module.exports.send = async() => {
 
 // module.exports = nodeMailerUser;
 // module.exports = router;
-
