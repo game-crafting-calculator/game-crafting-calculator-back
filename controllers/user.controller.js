@@ -2,6 +2,11 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+//email handler
+const nodemailer = require("nodemailer");
+//env variables
+require("dotenv").config();
+
 const pool = require("./../database/db-connect");
 
 const generateTokenReponse = (user_id, email) => {
@@ -21,6 +26,23 @@ const generateTokenReponse = (user_id, email) => {
 
 let controller = {};
 
+//nodemailer stuff
+const transporter = nodemailer.createTransport({
+  service: "zohomail",
+  auth: {
+    user: process.env.AUTH_EMAIL,
+    pass: process.env.AUTH_PASS,
+  },
+});
+
+//testing success
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("Not ready for messages", error);
+  } else {
+    console.log("Ready for messages", success);
+  }
+});
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // REGISTER
@@ -267,13 +289,14 @@ controller.updateProfile = async (user_id, username, password) => {
 controller.deleteAccount = async (user_id) => {
   let deletedUser;
   try {
-    deletedUser = await pool.query(
-      `DELETE FROM app_user WHERE user_id = $1`, 
-      [user_id]
-      );
+    deletedUser = await pool.query(`DELETE FROM app_user WHERE user_id = $1`, [
+      user_id,
+    ]);
   } catch (error) {
     console.log(
-      "DEV - userController - deleteProfile - delete profile\n", error);
+      "DEV - userController - deleteProfile - delete profile\n",
+      error
+    );
     return [true, "server error"];
   }
 

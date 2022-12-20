@@ -18,21 +18,22 @@ const fs = require("fs");
 
 nodemailerSend.send = async () => {
   //nodemailer stuff
-  try {
-    const transporter = await nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.AUTH_EMAIL,
-        pass: process.env.AUTH_PASS,
-      },
-    });
-  } catch (error) {
-    console.log(
-      "DEV - nodemailerController - transporter - create stuff error\n",
-      error
-    );
-    return [false, "transporter error"];
-  }
+  const transporter = await nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.AUTH_EMAIL,
+      pass: process.env.AUTH_PASS,
+    },
+  });
+
+  //testing success
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log("Not ready for messages", error);
+    } else {
+      console.log("Ready for messages", success);
+    }
+  });
 
   const templateFile = fs.readFileSync("../template/Mail/templateMail.html");
   const templateStyled = await inlineCss(templateFile.toString(), {
@@ -70,17 +71,6 @@ nodemailerSend.send = async () => {
     }
   });
 };
-
-//testing success
-// transporter.verify((error, success) => {
-//     if(error) {
-//         console.log(error);
-//         console.log("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "Not ready for messages");
-//     } else {
-//         console.log("Ready for messages");
-//         console.log(success);
-//     }
-// })
 
 //send verification email
 // exports.sendVerificationEmail = ({_id, email}, res) => {
