@@ -26,26 +26,30 @@ const generateTokenReponse = (user_id, email) => {
 
 let controller = {};
 
-//nodemailer stuff
-const transporter = nodemailer.createTransport({
-  service: "zohomail",
-  auth: {
-    user: process.env.AUTH_EMAIL,
-    pass: process.env.AUTH_PASS,
-  },
-});
+// //nodemailer stuff
+// const transporter = nodemailer.createTransport({
+//   service: "zohomail",
+//   auth: {
+//     user: process.env.AUTH_EMAIL,
+//     pass: process.env.AUTH_PASS,
+//   },
+// });
 
-//testing success
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("Not ready for messages", error);
-  } else {
-    console.log("Ready for messages", success);
-  }
-});
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// //testing success
+// transporter.verify((error, success) => {
+//   if (error) {
+//     console.log("Not ready for messages", error);
+//   } else {
+//     console.log("Ready for messages", success);
+//   }
+// });
 
-// REGISTER
+/*--------------------------------------------------------------------------------
+
+------------------------------------REGISTER--------------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.createAccount = async (username, email, password) => {
   //vérifier l'email
   if (!validator.isEmail(email)) {
@@ -146,9 +150,12 @@ controller.createAccount = async (username, email, password) => {
   }
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// LOGIN
+---------------------------------------LOGIN--------------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.login = async (email, password) => {
   //vérifier l'email
   if (!validator.isEmail(email)) {
@@ -207,9 +214,12 @@ controller.login = async (email, password) => {
   return [token, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// GET PROFILE
+-------------------------------------GET PROFILE----------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.getProfile = async (user_id) => {
   let user;
   try {
@@ -230,9 +240,12 @@ controller.getProfile = async (user_id) => {
   return [user, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// UPDATE PROFILE
+-----------------------------------UPDATE PROFILE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.updateProfile = async (user_id, username, password) => {
   //find user
   let user;
@@ -283,9 +296,12 @@ controller.updateProfile = async (user_id, username, password) => {
   return [true, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// DELETE ACCOUNT
+-----------------------------------DELETE PROFILE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.deleteAccount = async (user_id) => {
   let deletedUser;
   try {

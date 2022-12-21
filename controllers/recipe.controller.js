@@ -3,7 +3,12 @@ const validator = require("validator");
 
 let controller = {};
 
-// GET ALL
+/*--------------------------------------------------------------------------------
+
+------------------------------------RECIPE GET ALL--------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.getAll = async () => {
   let recipe;
   try {
@@ -29,9 +34,12 @@ controller.getAll = async () => {
   return [recipe, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// GET BY NAME
+----------------------------------RECIPE GET BY NAME------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.getOneByName = async (item_name) => {
   let recipe;
   try {
@@ -61,9 +69,12 @@ controller.getOneByName = async (item_name) => {
   return [recipe, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//GET BY ID
+-----------------------------------RECIPE GET BY ID-------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.getOneById = async (recipe_id) => {
   let recipe;
   try {
@@ -93,9 +104,12 @@ controller.getOneById = async (recipe_id) => {
   return [recipe, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//GET BY ADRI
+----------------------------------RECIPE GET COMPLETE-----------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.getCompleteById = async (recipe_id) => {
   let recipe;
   try {
@@ -125,13 +139,14 @@ controller.getCompleteById = async (recipe_id) => {
   return [recipe, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//CREATE RECIPE
+-------------------------------------CREATE RECIPE--------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.postRecipe = async (item_id, per_craft, ingredients) => {
-  //creer le compte utilisateur
   let recipe_id;
-
   try {
     recipe_id = await pool.query(
       `
@@ -172,9 +187,12 @@ controller.postRecipe = async (item_id, per_craft, ingredients) => {
   return [true, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// UPDATE ITEM
+-------------------------------------MODIFY RECIPE--------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.putRecipe = async (item_id, item_name, image) => {
   //find item
   let recipe_id;
@@ -224,9 +242,12 @@ controller.putRecipe = async (item_id, item_name, image) => {
   return [true, ""];
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-// DELETE ITEM
+------------------------------------DELETE RECIPE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 controller.deleteRecipe = async (recipe_id) => {
   let deleteRecipe;
   try {
@@ -260,6 +281,129 @@ controller.deleteRecipe = async (recipe_id) => {
   }
 
   return [true, ""];
+};
+
+/*--------------------------------------------------------------------------------
+
+--------------------------------RECIPE GET INGREDIENT-----------------------------
+
+----------------------------------------------------------------------------------*/
+controller.getIngredients = async (recipe_id) => {
+  //Selectionner tous les ingredients d'une recette
+  try {
+    let data = await pool.query(
+      `
+        SELECT needs.item_id, needs.quantity, item.item_name, item.image
+        FROM needs
+        INNER JOIN item ON needs.item_id = item.item_id
+        WHERE recipe_id = $1
+      `,
+      [recipe_id]
+    );
+
+    // Si la ligne à selectionner est innexistante, renvoyer "false"
+    if (data.rowCount === 0) {
+      return [false, "ingredients not found"];
+    }
+
+    return [data.rows, ""];
+  } catch (error) {
+    console.log(error);
+    return [false, "server error"];
+  }
+};
+
+/*--------------------------------------------------------------------------------
+
+----------------------------------GET COMPLETE RECIPE-----------------------------
+
+----------------------------------------------------------------------------------*/
+
+controller.getCompleteRecipe = async (recipe_id, quantity) => {
+  //Selectionne l'integralitée des éléments de la recette
+  let recipe = {};
+  try {
+    let data = await pool.query(
+      `
+        SELECT item.item_name, item.image, recipe.per_craft, recipe.recipe_id, item.item_id
+        FROM recipe
+        INNER JOIN item ON recipe.item_id = item.item_id
+        WHERE recipe_id = $1
+      `,
+      [recipe_id]
+    );
+
+    // Si la ligne à selectionner est innexistante, renvoyer "false"
+    if (data.rowCount === 0) {
+      return [false, "ingredients not found"];
+    }
+
+    recipe = data.rows[0];
+  } catch (error) {
+    console.log(error);
+    return [false, "server error"];
+  }
+
+  //Verifie que les ingredients sont existants
+  let [ingredients, error] = await controller.getIngredients(recipe_id);
+  if (!ingredients) {
+    return [false, error];
+  }
+
+  //Additionnes les recettes per_craft
+  let numberOfCrafts = Math.ceil(quantity / recipe.per_craft);
+  console.log(numberOfCrafts);
+
+  ingredients = ingredients.map((ing) => ({
+    ...ing,
+    quantity: ing.quantity * numberOfCrafts,
+  }));
+
+  recipe.ingredients = ingredients;
+
+  return [recipe, ""];
+};
+
+/*--------------------------------------------------------------------------------
+
+------------------------------------GET RECIPE TREE-------------------------------
+
+----------------------------------------------------------------------------------*/
+
+controller.getRecipeTree = async (recipe_id, quantity) => {
+  //Verifie que les ingredients de l'arbres sont existants
+  let [tree, error] = await controller.getCompleteRecipe(recipe_id, quantity);
+
+  if (!tree) {
+    return [false, error];
+  }
+
+  let stack = [tree];
+
+  while (stack.length > 0) {
+    let current = stack.pop();
+
+    if (!current.ingredients) {
+      continue;
+    }
+
+    current.ingredients = await Promise.all(
+      current.ingredients.map(async (ing) => {
+        let [recipe, error] = await controller.getCompleteRecipe(
+          ing.id,
+          ing.quantity
+        );
+
+        if (!recipe) {
+          return ing;
+        }
+
+        stack.push(recipe);
+      })
+    );
+  }
+
+  return [tree, ""];
 };
 
 module.exports = controller;

@@ -3,11 +3,15 @@ const router = express.Router();
 const userController = require("../controllers/user.controller");
 
 const auth = require("../middleware/auth");
-const getMissingParameters = require("../utils/missing-parameters").getMissingParameter;
+const getMissingParameters =
+  require("../utils/missing-parameters").getMissingParameter;
 
+/*--------------------------------------------------------------------------------
 
+-------------------------------------ROUTE SIGNUP---------------------------------
 
-//ROUTE REGISTER
+----------------------------------------------------------------------------------*/
+
 router.post("/signup", async (req, res) => {
   //on récupére les données de la requéte
   let { username, email, password } = req.body;
@@ -32,9 +36,12 @@ router.post("/signup", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE LOGIN
+-------------------------------------ROUTE LOGIN----------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.post("/login", async (req, res) => {
   //on récupére les données de la requéte
   let { email, password } = req.body;
@@ -55,27 +62,34 @@ router.post("/login", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//AUTH
+-------------------------------------ROUTE AUTH-----------------------------------
+
+----------------------------------------------------------------------------------*/
+
 //fonction suivante => auth tous ce qui suit
 router.use(auth);
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE GET PROFILE
+----------------------------------ROUTE GET PROFILE-------------------------------
+
+----------------------------------------------------------------------------------*/
 router.get("/profile", async (req, res) => {
   //on récupére les données de la requéte
   let { user_id } = req.user;
 
   //On verifie que les données sont existants
   let missing = getMissingParameters({ user_id });
+
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
   let [result, error] = await userController.getProfile(user_id);
+
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -84,9 +98,12 @@ router.get("/profile", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE MODIFY
+-------------------------------------ROUTE MODIFY---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.put("/profile", async (req, res) => {
   //on récupére les données de la requéte
   let { user_id } = req.user;
@@ -113,9 +130,12 @@ router.put("/profile", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE DELETE
+-------------------------------------ROUTE DELETE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.delete("/", async (req, res) => {
   //on récupére les données de la requéte
   let { user_id } = req.user;

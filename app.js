@@ -9,14 +9,9 @@ const userRoutes = require("./routes/user.route");
 const itemRoutes = require("./routes/item.route");
 // const auth = require("./middleware/auth");
 const recipeRoutes = require("./routes/recipe.route");
+const bookmarksRoutes = require("./routes/bookmarks.route");
 
 const path = require("path");
-
-// mongoose.connect('mongodb+srv://admin:Kq3QBbiLDkdiUZnH@digichat.otbhvo9.mongodb.net/game-crafting-calculator',
-// { useNewUrlParser: true,
-//   useUnifiedTopology: true })
-//   .then(() => console.log('Connexion à MongoDB réussie !'))
-//   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 const app = express();
 
@@ -51,5 +46,6 @@ app.use((req, res, next) => {
 app.use("/api/user", userRoutes);
 app.use("/api/item", itemRoutes);
 app.use("/api/recipe", recipeRoutes);
+app.use("/api/bookmarks", bookmarksRoutes);
 
 module.exports = app;

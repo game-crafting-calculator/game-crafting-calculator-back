@@ -5,7 +5,12 @@ const recipeController = require("../controllers/recipe.controller");
 const getMissingParameters =
   require("../utils/missing-parameters").getMissingParameter;
 
-//ROUTE GET ALL
+/*--------------------------------------------------------------------------------
+
+------------------------------------ROUTE GET ALL---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.get("/", async (req, res) => {
   let [result, error] = await recipeController.getAll();
 
@@ -17,9 +22,12 @@ router.get("/", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE GET BY NAME
+----------------------------------ROUTE GET BY NAME-------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.get("/name/:recipe_name", async (req, res) => {
   //on recupère des données de la requete
   let { recipe_name } = req.params;
@@ -42,9 +50,12 @@ router.get("/name/:recipe_name", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE GET BY ID
+----------------------------------ROUTE GET BY ID---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.get("/id/:recipe_id", async (req, res) => {
   //on recupère des données de la requete
   let { recipe_id } = req.params;
@@ -68,9 +79,12 @@ router.get("/id/:recipe_id", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE CREATE
+-------------------------------------ROUTE CREATE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.post("/", async (req, res) => {
   //on récupére les données de la requéte
   let { item_id, per_craft, ingredients } = req.body;
@@ -95,9 +109,12 @@ router.post("/", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE MODIFY
+-------------------------------------ROUTE MODIFY---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.put("/:recipe_id", async (req, res) => {
   //on récupére les données de la requéte
   let { recipe_id } = req.params;
@@ -124,9 +141,12 @@ router.put("/:recipe_id", async (req, res) => {
   res.status(200).json(result);
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/*--------------------------------------------------------------------------------
 
-//ROUTE DELETE
+-------------------------------------ROUTE DELETE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
 router.delete("/:recipe_id", async (req, res) => {
   //on récupére les données de la requéte
   let { recipe_id } = req.params;
@@ -138,7 +158,35 @@ router.delete("/:recipe_id", async (req, res) => {
     return false;
   }
 
-  let [result, error] = await recipeController.deleterecipe(recipe_id);
+  let [result, error] = await recipeController.deleteRecipe(recipe_id);
+  if (!result) {
+    res.status(400).json({ error });
+    return false;
+  }
+
+  res.status(200).json(result);
+});
+
+/*--------------------------------------------------------------------------------
+
+                                  ADRIEN
+
+----------------------------------------------------------------------------------*/
+router.get("/tree/:recipe_id/:quantity", async (req, res) => {
+  //on récupére les données de la requéte
+  let { recipe_id, quantity } = req.params;
+
+  //On verifie que les données sont existantes
+  let missing = getMissingParameters({ recipe_id, quantity });
+  if (missing) {
+    res.status(400).json({ error: "missing", parameters: missing });
+    return false;
+  }
+
+  let [result, error] = await recipeController.getRecipeTree(
+    recipe_id,
+    quantity
+  );
   if (!result) {
     res.status(400).json({ error });
     return false;
