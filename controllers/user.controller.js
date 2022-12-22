@@ -4,10 +4,13 @@ const jwt = require("jsonwebtoken");
 
 //email handler
 const nodemailer = require("nodemailer");
+//email generator
+const mailGen = require("mailgen");
 //env variables
 require("dotenv").config();
 
 const pool = require("./../database/db-connect");
+const { getMaxListeners } = require("../app");
 
 const generateTokenReponse = (user_id, email) => {
   const token = jwt.sign(
@@ -24,10 +27,78 @@ const generateTokenReponse = (user_id, email) => {
   return token;
 };
 
-let controller = {};
+//send mail from testing account
+async function main() {
+  let testAccount = await nodemailer.createTestAccount();
+
+  let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass, // generated ethereal password
+    },
+  });
+
+  let message = {
+    from: '"Fred Foo 👻" <foo@example.com>', // sender address
+    to: "bar@example.com, baz@example.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Successfully Register with us", // plain text body
+    html: "<b>Successfully Register with us</b>", // html body
+  };
+
+  transporter
+    .sendMail(message)
+    .then((info) => {
+      return res.status(201).json({
+        msg: "you should receive an email",
+        info: info.messageId,
+        prewiew: nodemailer.getTestMessageUrl(info),
+      });
+    })
+    .catch((error) => {
+      return res.status(500).json({ error });
+    });
+}
+
+//send mail from real gmail account
+const getbill = (requ, res) => {
+  let config = {
+    Service: "gmail",
+    auth: {
+      user: process.env.AUTH_EMAIL,
+      pass: process.env.AUTH_PASS,
+    },
+  };
+
+  let transporter = nodmailer.createTransport(config);
+  let MailGenerator = new MailGen({
+    theme: "defaut",
+    product: {
+      name: "Mailgen",
+      link: "https://mailgen.js",
+    },
+  });
+
+  let response = {
+    body: {
+      name,
+      intro: "Your bill has arrived!",
+      table: {
+        data: "Nodemailer Stack Book",
+        description: "A Backend application",
+        price: "$10.99",
+      },
+    },
+  };
+
+  res.status(201).json("getBill Successfully...!");
+};
 
 // //nodemailer stuff
-// const transporter = nodemailer.createTransport({
+// const transporter = await nodemailer.createTransport({
 //   service: "zohomail",
 //   auth: {
 //     user: process.env.AUTH_EMAIL,
@@ -44,6 +115,7 @@ let controller = {};
 //   }
 // });
 
+let controller = {};
 /*--------------------------------------------------------------------------------
 
 ------------------------------------REGISTER--------------------------------------
