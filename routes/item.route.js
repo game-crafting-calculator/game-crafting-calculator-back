@@ -1,33 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/user.controller");
+const itemController = require("../controllers/item.controller");
 
-const auth = require("../middleware/auth");
 const getMissingParameters =
   require("../utils/missing-parameters").getMissingParameter;
 
 /*--------------------------------------------------------------------------------
 
--------------------------------------ROUTE SIGNUP---------------------------------
+------------------------------------ROUTE GET ALL---------------------------------
 
 ----------------------------------------------------------------------------------*/
 
-router.post("/signup", async (req, res) => {
-  //on récupére les données de la requéte
-  let { username, email, password } = req.body;
+router.get("/", async (req, res) => {
+  let [result, error] = await itemController.getAll();
 
-  //On verifie que les données sont existants
-  let missing = getMissingParameters({ username, email, password });
-  if (missing) {
-    res.status(400).json({ error: "missing", parameters: missing });
-    return false;
-  }
-
-  let [result, error] = await userController.createAccount(
-    username,
-    email,
-    password
-  );
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -38,22 +24,24 @@ router.post("/signup", async (req, res) => {
 
 /*--------------------------------------------------------------------------------
 
--------------------------------------ROUTE LOGIN----------------------------------
+----------------------------------ROUTE GET BY NAME-------------------------------
 
 ----------------------------------------------------------------------------------*/
 
-router.post("/login", async (req, res) => {
-  //on récupére les données de la requéte
-  let { email, password } = req.body;
+router.get("/name/:item_name", async (req, res) => {
+  //on recupère des données de la requete
+  let { item_name } = req.params;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ email, password });
+  let missing = getMissingParameters({ item_name });
+
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.login(email, password);
+  let [result, error] = await itemController.getOneByName(item_name);
+
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -64,32 +52,51 @@ router.post("/login", async (req, res) => {
 
 /*--------------------------------------------------------------------------------
 
--------------------------------------ROUTE AUTH-----------------------------------
+-----------------------------------ROUTE GET BY ID--------------------------------
 
 ----------------------------------------------------------------------------------*/
 
-//fonction suivante => auth tous ce qui suit
-router.use(auth);
-
-/*--------------------------------------------------------------------------------
-
-----------------------------------ROUTE GET PROFILE-------------------------------
-
-----------------------------------------------------------------------------------*/
-router.get("/profile", async (req, res) => {
-  //on récupére les données de la requéte
-  let { user_id } = req.user;
+router.get("/id/:item_id", async (req, res) => {
+  //on recupère des données de la requete
+  let { item_id } = req.params;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
+
+  let missing = getMissingParameters({ item_id });
 
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.getProfile(user_id);
+  let [result, error] = await itemController.getOneById(item_id);
 
+  if (!result) {
+    res.status(400).json({ error });
+    return false;
+  }
+
+  res.status(200).json(result);
+});
+
+/*--------------------------------------------------------------------------------
+
+-------------------------------------ROUTE CREATE---------------------------------
+
+----------------------------------------------------------------------------------*/
+
+router.post("/", async (req, res) => {
+  //on récupére les données de la requéte
+  let { item_name, image } = req.body;
+
+  //On verifie que les données sont existants
+  let missing = getMissingParameters({ item_name, image });
+  if (missing) {
+    res.status(400).json({ error: "missing", parameters: missing });
+    return false;
+  }
+
+  let [result, error] = await itemController.postItem(item_name, image);
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -104,23 +111,19 @@ router.get("/profile", async (req, res) => {
 
 ----------------------------------------------------------------------------------*/
 
-router.put("/profile", async (req, res) => {
+router.put("/:item_id", async (req, res) => {
   //on récupére les données de la requéte
-  let { user_id } = req.user;
-  let { username, password } = req.body;
+  let { item_id } = req.params;
+  let { item_name, image } = req.body;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
+  let missing = getMissingParameters({ item_id });
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.updateProfile(
-    user_id,
-    username,
-    password
-  );
+  let [result, error] = await itemController.putItem(item_id, item_name, image);
 
   if (!result) {
     res.status(400).json({ error });
@@ -136,18 +139,18 @@ router.put("/profile", async (req, res) => {
 
 ----------------------------------------------------------------------------------*/
 
-router.delete("/", async (req, res) => {
+router.delete("/:item_id", async (req, res) => {
   //on récupére les données de la requéte
-  let { user_id } = req.user;
+  let { item_id } = req.params;
 
   //On verifie que les données sont existants
-  let missing = getMissingParameters({ user_id });
+  let missing = getMissingParameters({ item_id });
   if (missing) {
     res.status(400).json({ error: "missing", parameters: missing });
     return false;
   }
 
-  let [result, error] = await userController.deleteAccount(user_id);
+  let [result, error] = await itemController.deleteItem(item_id);
   if (!result) {
     res.status(400).json({ error });
     return false;
@@ -155,7 +158,5 @@ router.delete("/", async (req, res) => {
 
   res.status(200).json(result);
 });
-
-// router.get("/favoris", userCtrl.getFavoris);
 
 module.exports = router;

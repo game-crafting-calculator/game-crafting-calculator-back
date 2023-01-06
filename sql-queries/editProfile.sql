@@ -1,3 +1,4 @@
+-- SQLBook: Code
 UPDATE app_user
 SET
     username = 'adrien',
