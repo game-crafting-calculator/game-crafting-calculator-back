@@ -3,7 +3,6 @@
 
 // const auth = require('../middleware/auth');
 
-
 // router.sendVerificationEmail('/verify', nodeMailerUser.sendVerificationEmail);
 // router.get('/verify/:userId/:uniqueString', nodeMailerUser.sendVerificationEmail);
 // router.get('/verified', nodeMailerUser.sendVerificationEmail);

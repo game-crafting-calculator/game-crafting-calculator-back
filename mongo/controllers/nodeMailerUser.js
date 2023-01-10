@@ -4,7 +4,7 @@ const inlineCss = require("inline-css");
 const hogan = require("hogan.js");
 
 //MongoDB user verification model
-const UserVerification = require("../models/UserVerification");
+const UserVerification = require("../mongo/models/UserVerification");
 //email handler
 const nodemailer = require("nodemailer");
 //unique string
